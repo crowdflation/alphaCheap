@@ -4,9 +4,21 @@ var urlRegex = /^https?:\/\/(?:[^./?#]+\.)?walmart\.com\/grocery\/*/;
 
 // A function to use as callback
 function doStuffWithDom(domContent) {
-  //TODO: send it to the backend for storage
-  console.log('I received the following DOM content:\n' + domContent);
+  let location = null;
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      location = position.coords;
+    });
+  }
+
+  let data = JSON.parse(domContent);
+
+  var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
+  xmlhttp.open("POST", 'https://mflation.herokuapp.com/api/walmart');
+  xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  xmlhttp.send(JSON.stringify({data, location}));
 }
+
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   if(changeInfo?.status =='complete') {
     if (urlRegex.test(tab.url)) {
