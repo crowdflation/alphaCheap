@@ -13,7 +13,7 @@ const vendors = {
 
 
 function handleResponse(response) {
-  let location = null;
+  let location:any = null;
   if ('geolocation' in navigator) {
     navigator.geolocation.getCurrentPosition(function(position) {
       location = position.coords;
@@ -24,6 +24,7 @@ function handleResponse(response) {
 
   // Send data to website
   // TODO: This will send data to blockchain directly later on
+  // FIXME: replace with axios
   var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
   xmlhttp.open("POST", vendors[vendor].backend);
   xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -38,7 +39,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         // haven't figured out a better way to do this yet, so we just wait 5 seconds after page is loaded
         setTimeout(()=> {
           // ...if it matches, send a message specifying a callback too
-          chrome.tabs.sendMessage(tab.id, {text: key}, handleResponse)
+          chrome.tabs.sendMessage(tab.id as number, {text: key}, handleResponse)
         }, 5000);
       }
     }

@@ -1,8 +1,8 @@
 // TODO: Move this into separate file
 function parseWalmart(document, sendResponse, vendor) {
   const products = document.querySelectorAll('[data-automation-id="productTileDetails"]');
-  let result = [];
-  [].forEach.call(products, function (product) {
+  let result:any[] = [];
+  [].forEach.call(products, function (product: any) {
     const pricePerUnit = product.querySelectorAll('[data-automation-id="price-per-unit"]')[0]?.innerText;
     const price = product.querySelectorAll('[data-automation-id="price"] span')[1]?.innerText;
     const name = product.querySelectorAll('[data-automation-id="name"]')[0].innerText;
@@ -19,8 +19,8 @@ function parseWalmart(document, sendResponse, vendor) {
 
 function parseKroger(document, sendResponse, vendor) {
   const products = document.querySelectorAll('[data-qa*="product-card-"]');
-  let result = [];
-  [].forEach.call(products, function (product) {
+  let result:any[] = [];
+  [].forEach.call(products, function (product:any) {
     const price = product.querySelectorAll('[data-qa="cart-page-item-unit-price"]')[0]?.innerText;
     const nameAndPrice = product.querySelectorAll('[data-qa="cart-page-item-description"]')[0].innerText;
     const name = nameAndPrice.split(' - ')[0];
