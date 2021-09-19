@@ -21,7 +21,7 @@
           "js": ["js/vendor.js", "js/content_script.js"]
       }
   ],
-
+  "web_accessible_resources": ["injected.js"],
   "background": {
     "scripts": ["js/vendor.js", "js/background.js"]
   }
