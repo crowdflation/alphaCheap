@@ -23,7 +23,7 @@ chrome.runtime.onMessage.addListener( async (msg, sender, sendResponse) => {
         var data = e.detail;
         if(!data.found) {
           // TODO: Make this visually nice
-          alert('Please install and set up Metamask with Ethereum blockchain for your data to be signed and to earn rewards');
+          //alert('Please install and set up Metamask with Ethereum blockchain for your data to be signed and to earn rewards');
           sendResponse(JSON.stringify({
             publicKeySigned: {},
             walletAddress: null,

@@ -5,7 +5,7 @@ const NodeRSA = require('node-rsa');
 
 let key:any = null;
 let publicKey:any = null;
-let publicKeySigned = null;
+let publicKeySigned:any = null;
 let walletAddress = null;
 let walletPublicKey = null;
 
@@ -97,12 +97,15 @@ const handleResponse = async (response) => {
 
 const handleResponsePublicKey = async (response) => {
   let parsed = response;
-  publicKeySigned = parsed.publicKeySigned;
-  walletAddress = parsed.walletAddress;
-  walletPublicKey = parsed.walletPublicKey;
-  if(!_.isEmpty(publicKeySigned)) {
+  publicKeySigned = parsed?.publicKeySigned;
+  walletAddress = parsed?.walletAddress;
+  walletPublicKey = parsed?.walletPublicKey;
+  if(publicKeySigned && !_.isEmpty(publicKeySigned)) {
     await setKey('publicKeySigned', publicKeySigned);
     await setKey('walletAddress', walletAddress);
+  } else {
+    // FIXME: figure out why response is undefined
+    publicKeySigned = {};
   }
 };
 
@@ -117,7 +120,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
           // ...if it matches, send a message specifying a callback too
 
           if(!publicKeySigned) {
-            chrome.tabs.sendMessage(tab.id as number, {publicKey})
+            chrome.tabs.sendMessage(tab.id as number, {publicKey}, handleResponsePublicKey)
 
             const listener = function(request, sender, sendResponse) {
               handleResponsePublicKey(request);
