@@ -6,5 +6,6 @@ interface IVendor {
 
 import kroger from './kroger';
 import walmart from './walmart';
+import zillow from './zillow';
 
-export default {kroger, walmart} as {[name:string]:IVendor};
+export default {kroger, walmart, zillow} as {[name:string]:IVendor};
