@@ -4,10 +4,10 @@ function parse(document, sendResponse) {
   let result:any[] = [];
   [].forEach.call(products, function (product: any) {
     try {
-      const originalPrice = product.querySelectorAll('.priceInfo .regular > span')[0]?.innerText;
-      let price = product.querySelectorAll('.priceInfo .discount > span')[0]?.innerText;
+      const originalPrice = product.querySelectorAll('.priceInfo .regular')[0]?.innerText;
+      let price = product.querySelectorAll('.priceInfo .discount')[0]?.innerText;
       if (!price){
-        price = product.querySelectorAll('.priceInfo .regular > span')[1]?.innerText;
+        price = product.querySelectorAll('.priceInfo .regular')[1]?.innerText;
       }
       const name = product.querySelectorAll('div.productDescription > a')[0].innerText;
       const brand = product.querySelectorAll('div.productBrand')[0].innerText;

@@ -6,7 +6,7 @@ function parse(document, sendResponse) {
     try {
       const price = product.querySelectorAll('[data-anchor-id="StoreMenuItemPrice"]')[0]?.innerText;
       const name = product.querySelectorAll('[data-testid="GenericItemCard"] > div> div >span')[0].innerText;
-      const description = product.querySelectorAll('[data-anchor-id="MenuItem"] > button > div > div > div > span > div > div.sc-bWjmDF.ecgIBK > div:nth-child(2) > span')[0]?.innerText;
+      const description = product.querySelectorAll('[data-anchor-id="MenuItem"] > button > div > div > div > span > div > div > div:nth-child(2) > span')[0]?.innerText;
       //Ignore if we don't have price data
       if (!price) {
         return;

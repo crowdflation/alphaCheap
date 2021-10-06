@@ -10,4 +10,4 @@ import zillow from './zillow';
 import macys from './macys';
 import doordash from './doordash';
 
-export default {kroger, walmart, zillow} as {[name:string]:IVendor};
+export default {kroger, walmart, zillow, macys, doordash} as {[name:string]:IVendor};
