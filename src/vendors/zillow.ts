@@ -23,5 +23,4 @@ function parse(document, sendResponse) {
 }
 
 const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?zillow\.com\/willow-ak\/*/;
-const backend = 'https://mflation.herokuapp.com/api/zillow';
-export default {vendor, parse, urlRegex, backend};
+export default {vendor, parse, urlRegex};

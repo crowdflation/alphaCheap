@@ -23,5 +23,4 @@ function parse(document, sendResponse) {
 }
 
 const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?doordash\.com\/store\/*/;
-const backend = 'https://mflation.herokuapp.com/api/doordash';
-export default {vendor, parse, urlRegex, backend};
+export default {vendor, parse, urlRegex};

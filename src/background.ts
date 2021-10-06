@@ -89,7 +89,7 @@ const handleResponse = async (response) => {
   // TODO: This will send data to blockchain directly later on
   // FIXME: replace XMLHttpRequest with axios
   var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
-  xmlhttp.open("POST", vendors[vendor].backend);
+  xmlhttp.open("POST", 'https://mflation.herokuapp.com/api/vendors/' + vendor);
   xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
   xmlhttp.send(stringifiedWithSignature);
 };

@@ -1,7 +1,6 @@
 interface IVendor {
   parse: (document, sendResponse) => void;
   urlRegex: RegExp;
-  backend: string;
 };
 
 import kroger from './kroger';

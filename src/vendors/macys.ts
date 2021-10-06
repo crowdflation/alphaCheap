@@ -27,5 +27,4 @@ function parse(document, sendResponse) {
 }
 
 const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?macys\.com\/shop\/*/;
-const backend = 'https://mflation.herokuapp.com/api/macys';
-export default {vendor, parse, urlRegex, backend};
+export default {vendor, parse, urlRegex};

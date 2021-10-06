@@ -20,5 +20,4 @@ function parse(document, sendResponse) {
 }
 
 const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?kroger\.com\/search*/;
-const backend = 'https://mflation.herokuapp.com/api/kroger';
-export default {vendor, parse, urlRegex, backend};
+export default {vendor, parse, urlRegex};
