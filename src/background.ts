@@ -62,14 +62,34 @@ const getLocation = () => {
   });
 };
 
+function postData(url: string, stringifiedWithSignature: string) {
+  var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
+  xmlhttp.open("POST", url);
+  xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+  xmlhttp.send(stringifiedWithSignature);
+}
+
 const handleResponse = async (response) => {
   let location:any = await getLocation();
 
-  let { data, vendor } = JSON.parse(response);
+  let { data, vendor, errors, document, products } = JSON.parse(response);
+
+  const serverUrl = 'https://crowdflation.herokuapp.com';
+  //const serverUrl = 'http://localhost:3000';
 
   // TODO: send  html that has failed to parse to server for analysis
   if(!data.length) {
     console.error('Failed to parse html');
+    // Check if there is an email
+    if(document.search(/([^.@\s]+)(\.[^.@\s]+)*@([^.@\s]+\.)+([^.@\s]+)/) !== -1){
+      console.log("There is an email !");
+      // Remove it...
+      document = document.replace(/([^.@\s]+)(\.[^.@\s]+)*@([^.@\s]+\.)+([^.@\s]+)/,"anynymiszed@email.com");
+    }
+
+    //TODO: Anonymise - remove any other potential PI
+    const dataToSend = JSON.stringify({vendor, document, errors, products});
+    postData(serverUrl + '/api/errors', dataToSend);
     return;
   }
 
@@ -88,10 +108,12 @@ const handleResponse = async (response) => {
   // Send data to website
   // TODO: This will send data to blockchain directly later on
   // FIXME: replace XMLHttpRequest with axios
-  var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
-  xmlhttp.open("POST", 'https://mflation.herokuapp.com/api/vendors/' + vendor);
-  xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-  xmlhttp.send(stringifiedWithSignature);
+  postData(serverUrl +'/api/vendors/' + vendor, stringifiedWithSignature);
+
+  if(errors && errors.length) {
+    const dataWithErrors = JSON.stringify({ errors, details: {vendor, version: chrome.runtime.getManifest().version, walletAddress, publicKey, publicKeySigned, location: {longitude: location.longitude, latitude: location.latitude}}});
+    postData(serverUrl + '/api/errors', dataWithErrors);
+  }
 };
 
 

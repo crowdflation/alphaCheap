@@ -2,6 +2,7 @@ const vendor = 'walmart';
 function parse(document, sendResponse) {
   const products = document.querySelectorAll('div > div > div.flex.flex-column.justify-center > section > div > div> div > div');
   let result:any[] = [];
+  let errors:any[] = [];
   [].forEach.call(products, function (product: any) {
     try {
       const pricePerUnit = product.querySelectorAll('div.flex.flex-wrap.justify-start.items-center.lh-title.mb2.mb1-m > div.f7.f6-l.gray.mr1')[0]?.innerText;
@@ -20,11 +21,12 @@ function parse(document, sendResponse) {
       result.push(parsedData)
     }
     catch (e) {
-      console.error('Did not parse one items', e);
+      console.error('Did not parse one item', e);
+      errors.push(e);
     }
   });
   // Pass it back
-  sendResponse(JSON.stringify({ data: result, vendor}, null, 2));
+  sendResponse(JSON.stringify({ data: result, vendor, errors}, null, 2));
 }
 
 const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?walmart\.com\/*/;

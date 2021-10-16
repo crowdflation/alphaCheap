@@ -2,6 +2,7 @@ const vendor = 'doordash';
 function parse(document, sendResponse) {
   const products = document.querySelectorAll('[data-anchor-id="MenuItem"]');
   let result:any[] = [];
+  let errors:any[] = [];
   [].forEach.call(products, function (product: any) {
     try {
       const price = product.querySelectorAll('[data-anchor-id="StoreMenuItemPrice"]')[0]?.innerText;
@@ -16,10 +17,11 @@ function parse(document, sendResponse) {
     }
     catch (e) {
       console.error('Did not parse one items', e);
+      errors.push({error: e, html: product});
     }
   });
   // Pass it back
-  sendResponse(JSON.stringify({ data: result, vendor}, null, 2));
+  sendResponse(JSON.stringify({ data: result, vendor, errors, products, document: document.innerText}, null, 2));
 }
 
 const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?doordash\.com\/store\/*/;
