@@ -12,11 +12,12 @@ function parse(document, sendResponse) {
       }
       const name = product.querySelectorAll('div.productDescription > a')[0].innerText;
       const brand = product.querySelectorAll('div.productBrand')[0].innerText;
+      const pathname = new URL(document.URL).pathname;
       //Ignore if we don't have price data
-      if (!originalPrice&&!price) {
+      if (!originalPrice||!price) {
         return;
       }
-      const parsedData = {originalPrice, price, brand, name};
+      const parsedData = {originalPrice, price, brand, name, pathname};
       result.push(parsedData)
     }
     catch (e) {

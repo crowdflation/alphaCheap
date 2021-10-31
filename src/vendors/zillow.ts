@@ -24,5 +24,5 @@ function parse(document, sendResponse) {
   sendResponse(JSON.stringify({ data: result, vendor, errors }, null, 2));
 }
 
-const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?zillow\.com\/willow-ak\/*/;
+const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?zillow\.com\/homes\/*/;
 export default {vendor, parse, urlRegex};
