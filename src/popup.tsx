@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 
+
+
+
+
 const Popup = () => {
   const [count, setCount] = useState(0);
   const [currentURL, setCurrentURL] = useState<string>();
+  const [data, setData] = useState(0);
 
   useEffect(() => {
     chrome.browserAction.setBadgeText({ text: count.toString() });
@@ -12,6 +17,13 @@ const Popup = () => {
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
       setCurrentURL(tabs[0].url);
+    });
+
+    chrome.runtime.onMessage.addListener(function(request){
+      if(!request.data) {
+        return;
+      }
+      setData(request.data);
     });
   }, []);
 

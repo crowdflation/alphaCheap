@@ -1,24 +1,25 @@
 import vendors from './vendors';
 import _ from 'lodash';
+import axios from "axios";
 
 const NodeRSA = require('node-rsa');
 
-let key:any = null;
-let publicKey:any = null;
-let publicKeySigned:any = null;
+let key: any = null;
+let publicKey: any = null;
+let publicKeySigned: any = null;
 let walletAddress = null;
 let walletPublicKey = null;
 
 
-const readKey = (key:string):Promise<any> => {
+const readKey = (key: string): Promise<any> => {
   return new Promise((succ) => {
-    chrome.storage.sync.get([key], function(result) {
+    chrome.storage.sync.get([key], function (result) {
       succ(result?.[key]);
     });
   });
 };
 
-const setKey = (key:string, val:any):Promise<any> => {
+const setKey = (key: string, val: any): Promise<any> => {
   return new Promise((succ) => {
     chrome.storage.sync.set({[key]: val}, function () {
       succ()
@@ -46,10 +47,10 @@ const keysLoaded = loadKeys();
 
 
 const getLocation = () => {
-  return new Promise(function(succ:(any)) {
+  return new Promise(function (succ: (any)) {
     if ('geolocation' in navigator) {
       console.log('Trying to get location');
-      navigator.geolocation.getCurrentPosition(function(position) {
+      navigator.geolocation.getCurrentPosition(function (position) {
         console.log('Got location as', position.coords);
         succ(position.coords);
       }, function (err) {
@@ -62,38 +63,58 @@ const getLocation = () => {
   });
 };
 
-function postData(url: string, stringifiedWithSignature: string) {
-  var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
-  xmlhttp.open("POST", url);
-  xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-  xmlhttp.send(stringifiedWithSignature);
+const showMessage = (message:string, isError?:boolean) => {
+
+  let iconUrl = 'icon-big.png';
+  chrome.notifications.create(
+    {
+      type: 'list',
+      title: 'Alpha Cheap',
+      message,
+      priority: 2,
+      items: [{ title: 'Alpha Cheap', message: message}],
+      iconUrl
+    }
+  );
+}
+
+async function postData(url: string, data: any) {
+  return axios.post(url, data);
 }
 
 const handleResponse = async (response) => {
-  let location:any = await getLocation();
+  let location: any = await getLocation();
 
-  let { data, vendor, errors, document, products } = JSON.parse(response);
+  let {data, vendor, errors, document, products} = JSON.parse(response);
 
-  const serverUrl = 'https://crowdflation.herokuapp.com';
+  const serverUrl = 'https://www.crowdflation.io';
   //const serverUrl = 'http://localhost:3000';
 
   // TODO: send  html that has failed to parse to server for analysis
-  if(!data.length) {
+  if (!data.length) {
     console.error('Failed to parse html');
+    showMessage(`Failed to parse html for vendor ${vendor}. This error will be reported.`, true);
     // Check if there is an email
-    if(document.search(/([^.@\s]+)(\.[^.@\s]+)*@([^.@\s]+\.)+([^.@\s]+)/) !== -1){
+    if (document.search(/([^.@\s]+)(\.[^.@\s]+)*@([^.@\s]+\.)+([^.@\s]+)/) !== -1) {
       console.log("There is an email !");
       // Remove it...
-      document = document.replace(/([^.@\s]+)(\.[^.@\s]+)*@([^.@\s]+\.)+([^.@\s]+)/,"anynymiszed@email.com");
+      document = document.replace(/([^.@\s]+)(\.[^.@\s]+)*@([^.@\s]+\.)+([^.@\s]+)/, "anynymiszed@email.com");
     }
 
     //TODO: Anonymise - remove any other potential PI
-    const dataToSend = JSON.stringify({vendor, document, errors, products});
-    postData(serverUrl + '/api/errors', dataToSend);
+    postData(serverUrl + '/api/errors', {vendor, document, errors, products});
     return;
   }
 
-  const payload = {data, location: {longitude: location.longitude, latitude: location.latitude}, date: new Date(), walletAddress, walletPublicKey, publicKey, publicKeySigned};
+  const payload = {
+    data,
+    location: {longitude: location.longitude, latitude: location.latitude},
+    date: new Date(),
+    walletAddress,
+    walletPublicKey,
+    publicKey,
+    publicKeySigned
+  };
 
   const stringified = JSON.stringify(payload);
 
@@ -102,17 +123,33 @@ const handleResponse = async (response) => {
 
   const signed = {payload, signature: JSON.stringify(signature)};
 
-  const stringifiedWithSignature = JSON.stringify(signed);
-
-
   // Send data to website
   // TODO: This will send data to blockchain directly later on
-  // FIXME: replace XMLHttpRequest with axios
-  postData(serverUrl +'/api/vendors/' + vendor, stringifiedWithSignature);
+  postData(serverUrl + '/api/vendors/' + vendor, signed).then(()=> {
+    showMessage(`Sent ${data.length} records to ${vendor} from wallet ${walletAddress}`);
+    /*chrome.runtime.sendMessage({imageURIs: l}, function(response) {
+      console.log(response.farewell);
+    });*/
+  }).catch((err)=> {
+    showMessage(`Failed to send data to the server ${vendor}. Please check your connection or contact us on https://crowdflation.io or crowdflationinc@gmail.com`, true);
+    console.error('Failed to send data to server', serverUrl + '/api/vendors/' + vendor, signed, err);
+    postData(serverUrl + '/api/errors', {
+      err,
+    });
+  });
 
-  if(errors && errors.length) {
-    const dataWithErrors = JSON.stringify({ errors, details: {vendor, version: chrome.runtime.getManifest().version, walletAddress, publicKey, publicKeySigned, location: {longitude: location.longitude, latitude: location.latitude}}});
-    postData(serverUrl + '/api/errors', dataWithErrors);
+  if (errors && errors.length) {
+    postData(serverUrl + '/api/errors', {
+      errors,
+      details: {
+        vendor,
+        version: chrome.runtime.getManifest().version,
+        walletAddress,
+        publicKey,
+        publicKeySigned,
+        location: {longitude: location.longitude, latitude: location.latitude}
+      }
+    });
   }
 };
 
@@ -122,7 +159,7 @@ const handleResponsePublicKey = async (response) => {
   publicKeySigned = parsed?.publicKeySigned;
   walletAddress = parsed?.walletAddress;
   walletPublicKey = parsed?.walletPublicKey;
-  if(publicKeySigned && !_.isEmpty(publicKeySigned)) {
+  if (publicKeySigned && !_.isEmpty(publicKeySigned)) {
     await setKey('publicKeySigned', publicKeySigned);
     await setKey('walletAddress', walletAddress);
   } else {
@@ -131,20 +168,20 @@ const handleResponsePublicKey = async (response) => {
   }
 };
 
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
-  if(changeInfo?.status =='complete') {
-    for(let key in vendors) {
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+  if (changeInfo?.status == 'complete') {
+    for (let key in vendors) {
       const vendor = vendors[key];
       if (vendor.urlRegex.test(tab.url as string)) {
         // haven't figured out a better way to do this yet, so we just wait 5 seconds after page is loaded
-        setTimeout(async ()=> {
+        setTimeout(async () => {
           await keysLoaded;
           // ...if it matches, send a message specifying a callback too
 
-          if(!publicKeySigned) {
+          if (!publicKeySigned) {
             chrome.tabs.sendMessage(tab.id as number, {publicKey}, handleResponsePublicKey)
 
-            const listener = function(request, sender, sendResponse) {
+            const listener = function (request, sender, sendResponse) {
               handleResponsePublicKey(request);
               sendResponse({});
               chrome.runtime.onMessage.removeListener(listener);
@@ -152,9 +189,9 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
             chrome.runtime.onMessage.addListener(listener);
 
-            const cancel = setInterval(()=> {
-              if(publicKeySigned) {
-                if(_.isEmpty(publicKeySigned, true)) {
+            const cancel = setInterval(() => {
+              if (publicKeySigned) {
+                if (_.isEmpty(publicKeySigned, true)) {
                   publicKeySigned = null;
                 }
                 clearInterval(cancel);
