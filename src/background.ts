@@ -84,7 +84,7 @@ async function postData(url: string, data: any) {
 
 const handleResponse = async (response) => {
   //ignore if its a different type of message
-  if(!response.type || response.type !=='parsed' ) {
+  if(!response || !response.type || response.type !=='parsed' ) {
     return;
   }
 
@@ -140,7 +140,7 @@ const handleResponse = async (response) => {
     showMessage(`Failed to send data to the server for ${vendor}. Please check your connection or contact us on https://crowdflation.io or crowdflationinc@gmail.com`, true);
     console.error('Failed to send data to server', sendTo, signed, err);
     postData(serverUrl + '/api/errors', {
-      err, message: 'Failed to send data to the server ' + sendTo,
+      errors: [err], message: 'Failed to send data to the server ' + sendTo,
       type: 'upload-error',
       url
     });
@@ -166,6 +166,10 @@ const handleResponse = async (response) => {
 
 
 const handleResponsePublicKey = async (response) => {
+  if(!response || !response.type || response.type !=='signed' ) {
+    return;
+  }
+
   let parsed = response;
   publicKeySigned = parsed?.publicKeySigned;
   walletAddress = parsed?.walletAddress;

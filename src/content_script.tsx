@@ -33,13 +33,13 @@ chrome.runtime.onMessage.addListener( async (msg, sender, sendResponse) => {
         }
 
         console.log('received', data)
-        chrome.runtime.sendMessage(data, function() {
+        chrome.runtime.sendMessage({ ...data, type:'signed'}, function() {
           console.log('publicKeySigned sent');
         });
       });
 
       injectCode(msg.publicKey);
-      sendResponse();
+      sendResponse({type:'signed'});
       return;
     }
 
