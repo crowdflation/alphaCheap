@@ -1,5 +1,5 @@
 interface IVendor {
-  parse: (document, sendResponse) => void;
+  parse: (document) => any;
   urlRegex: RegExp;
 };
 

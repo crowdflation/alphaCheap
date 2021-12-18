@@ -1,5 +1,5 @@
 const vendor = 'doordash';
-function parse(document, sendResponse) {
+function parse(document) {
   const products = document.querySelectorAll('[data-anchor-id="MenuItem"]');
   let result:any[] = [];
   let errors:any[] = [];
@@ -21,7 +21,7 @@ function parse(document, sendResponse) {
     }
   });
   // Pass it back
-  sendResponse(JSON.stringify({ data: result, vendor, errors, products, document: document.innerText}, null, 2));
+  return{ data: result, vendor, errors, products };
 }
 
 const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?doordash\.com\/store\/*/;

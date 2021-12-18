@@ -83,9 +83,14 @@ async function postData(url: string, data: any) {
 }
 
 const handleResponse = async (response) => {
+  //ignore if its a different type of message
+  if(!response.type || response.type !=='parsed' ) {
+    return;
+  }
+
   let location: any = await getLocation();
 
-  let {data, vendor, errors, document, products} = JSON.parse(response);
+  let {data, vendor, errors, document, products, url} = JSON.parse(response);
 
   const serverUrl = 'https://www.crowdflation.io';
   //const serverUrl = 'http://localhost:3000';
@@ -101,8 +106,8 @@ const handleResponse = async (response) => {
       document = document.replace(/([^.@\s]+)(\.[^.@\s]+)*@([^.@\s]+\.)+([^.@\s]+)/, "anynymiszed@email.com");
     }
 
-    //TODO: Anonymise - remove any other potential PI
-    postData(serverUrl + '/api/errors', {vendor, document, errors, products});
+    //TODO: Anonymize - remove any other potential PI
+    postData(serverUrl + '/api/errors', { type: 'document-parse-error', vendor, document, errors, products, url});
     return;
   }
 
@@ -122,19 +127,22 @@ const handleResponse = async (response) => {
   const signature = key.sign(stringified);
 
   const signed = {payload, signature: JSON.stringify(signature)};
+  const sendTo = serverUrl + '/api/vendors/' + vendor;
 
   // Send data to website
   // TODO: This will send data to blockchain directly later on
-  postData(serverUrl + '/api/vendors/' + vendor, signed).then(()=> {
+  postData(sendTo, signed).then(()=> {
     showMessage(`Sent ${data.length} records to ${vendor} from wallet ${walletAddress}`);
     /*chrome.runtime.sendMessage({imageURIs: l}, function(response) {
       console.log(response.farewell);
     });*/
   }).catch((err)=> {
-    showMessage(`Failed to send data to the server ${vendor}. Please check your connection or contact us on https://crowdflation.io or crowdflationinc@gmail.com`, true);
-    console.error('Failed to send data to server', serverUrl + '/api/vendors/' + vendor, signed, err);
+    showMessage(`Failed to send data to the server for ${vendor}. Please check your connection or contact us on https://crowdflation.io or crowdflationinc@gmail.com`, true);
+    console.error('Failed to send data to server', sendTo, signed, err);
     postData(serverUrl + '/api/errors', {
-      err,
+      err, message: 'Failed to send data to the server ' + sendTo,
+      type: 'upload-error',
+      url
     });
   });
 
@@ -148,9 +156,12 @@ const handleResponse = async (response) => {
         publicKey,
         publicKeySigned,
         location: {longitude: location.longitude, latitude: location.latitude}
-      }
+      },
+      type: 'element-parse-error',
+      url
     });
   }
+
 };
 
 

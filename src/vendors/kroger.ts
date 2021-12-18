@@ -1,5 +1,5 @@
 const vendor = 'kroger';
-function parse(document, sendResponse) {
+function parse(document) {
   const products = document.querySelectorAll('[data-qa*="product-card-"]');
   let result:any[] = [];
   let errors:any[] = [];
@@ -23,7 +23,7 @@ function parse(document, sendResponse) {
     }
   });
   // Pass it back
-  sendResponse(JSON.stringify({ data: result, vendor, errors}, null, 2));
+  return { data: result, vendor, errors };
 }
 
 const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?kroger\.com\/search*/;

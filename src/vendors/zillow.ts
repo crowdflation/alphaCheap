@@ -1,5 +1,5 @@
 const vendor = 'zillow';
-function parse(document, sendResponse) {
+function parse(document) {
   const products = document.querySelectorAll('article.list-card');
   let result:any[] = [];
   let errors:any[] = [];
@@ -21,7 +21,7 @@ function parse(document, sendResponse) {
     }
   });
   // Pass it back
-  sendResponse(JSON.stringify({ data: result, vendor, errors }, null, 2));
+  return{ data: result, vendor, errors };
 }
 
 const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?zillow\.com\/homes\/*/;
