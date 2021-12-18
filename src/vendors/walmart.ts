@@ -22,7 +22,7 @@ function parse(document) {
     }
     catch (e) {
       console.error('Did not parse one item', e);
-      errors.push(e);
+      errors.push({error:e.toString(), stack: e.stack, element: product?.innerText});
     }
   });
   // Pass it back

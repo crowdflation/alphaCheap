@@ -90,7 +90,7 @@ const handleResponse = async (response) => {
 
   let location: any = await getLocation();
 
-  let {data, vendor, errors, document, products, url} = JSON.parse(response);
+  let {data, vendor, errors, document, products, url} = response;
 
   const serverUrl = 'https://www.crowdflation.io';
   //const serverUrl = 'http://localhost:3000';
