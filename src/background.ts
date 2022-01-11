@@ -90,7 +90,11 @@ const handleResponse = async (response) => {
 
   let location: any = await getLocation();
 
-  let {data, vendor, errors, document, products, url} = response;
+  let {data, vendor, errors, document, products, url, country} = response;
+
+  if(!country) {
+    country = 'US';
+  }
 
   const serverUrl = 'https://www.crowdflation.io';
   //const serverUrl = 'http://localhost:3000';
@@ -113,7 +117,7 @@ const handleResponse = async (response) => {
 
   const payload = {
     data,
-    location: {longitude: location.longitude, latitude: location.latitude},
+    location: {longitude: location?.longitude, latitude: location?.latitude},
     date: new Date(),
     walletAddress,
     walletPublicKey,
@@ -127,12 +131,13 @@ const handleResponse = async (response) => {
   const signature = key.sign(stringified);
 
   const signed = {payload, signature: JSON.stringify(signature)};
-  const sendTo = serverUrl + '/api/vendors/' + vendor;
+  const sendTo = serverUrl + '/api/vendors/' + vendor + '/' + country;
 
   // Send data to website
   // TODO: This will send data to blockchain directly later on
   postData(sendTo, signed).then(()=> {
     showMessage(`Sent ${data.length} records to ${vendor} from wallet ${walletAddress}`);
+    chrome.runtime.sendMessage({type:'data-sent'});
     /*chrome.runtime.sendMessage({imageURIs: l}, function(response) {
       console.log(response.farewell);
     });*/
@@ -155,7 +160,7 @@ const handleResponse = async (response) => {
         walletAddress,
         publicKey,
         publicKeySigned,
-        location: {longitude: location.longitude, latitude: location.latitude}
+        location: {longitude: location?.longitude, latitude: location?.latitude}
       },
       type: 'element-parse-error',
       url

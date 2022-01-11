@@ -1,4 +1,5 @@
 const vendor = 'walmart';
+
 function parse(document) {
   const products = document.querySelectorAll('div > div > div.flex.flex-column.justify-center > section > div > div> div > div');
   let result:any[] = [];
@@ -30,4 +31,4 @@ function parse(document) {
 }
 
 const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?walmart\.com\/*/;
-export default {vendor, parse, urlRegex};
+export default {vendor, parse, urlRegex, country: 'US'};

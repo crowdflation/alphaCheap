@@ -20,6 +20,13 @@ const Popup = () => {
     });
 
     chrome.runtime.onMessage.addListener(function(request){
+      if(request?.type !== 'data-sent') {
+        return;
+      }
+
+      setCount(count+1);
+
+
       if(!request.data) {
         return;
       }
@@ -54,7 +61,7 @@ const Popup = () => {
         onClick={() => setCount(count + 1)}
         style={{ marginRight: "5px" }}
       >
-        count up
+        count up {count}
       </button>
       <button onClick={changeBackground}>change background</button>
     </>

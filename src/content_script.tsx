@@ -51,5 +51,5 @@ chrome.runtime.onMessage.addListener( async (msg, sender, sendResponse) => {
     }
 
     const parsed = vendors[msg.text].parse(document);
-    sendResponse({...parsed, url: document.URL, document: (document as any).innerText, type: 'parsed' })
+    sendResponse({...parsed, url: document.URL, document: (document as any).innerText, type: 'parsed', country: vendors[msg.text].country })
 });

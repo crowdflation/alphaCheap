@@ -1,6 +1,7 @@
 interface IVendor {
   parse: (document) => any;
   urlRegex: RegExp;
+  country?:string;
 };
 
 import kroger from './kroger';
