@@ -1,6 +1,7 @@
 import vendors from './vendors';
 import _ from 'lodash';
 import axios from "axios";
+import {SimpleCSSVendor} from "./vendors/base";
 
 const NodeRSA = require('node-rsa');
 
@@ -10,6 +11,8 @@ let publicKeySigned: any = null;
 let walletAddress = null;
 let walletPublicKey = null;
 
+const serverUrl = 'https://www.crowdflation.io';
+//const serverUrl = 'http://localhost:3000';
 
 const readKey = (key: string): Promise<any> => {
   return new Promise((succ) => {
@@ -82,6 +85,10 @@ async function postData(url: string, data: any) {
   return axios.post(url, data);
 }
 
+async function getScrapers(url: string) {
+  return axios.get(url);
+}
+
 const handleResponse = async (response) => {
   //ignore if its a different type of message
   if(!response || !response.type || response.type !=='parsed' ) {
@@ -96,8 +103,7 @@ const handleResponse = async (response) => {
     country = 'US';
   }
 
-  const serverUrl = 'https://www.crowdflation.io';
-  //const serverUrl = 'http://localhost:3000';
+
 
   // TODO: send  html that has failed to parse to server for analysis
   if (!data.length) {
@@ -188,7 +194,20 @@ const handleResponsePublicKey = async (response) => {
   }
 };
 
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+
+
+chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
+  let scrapers = [];
+  try {
+    const response = await getScrapers(`${serverUrl}/api/scrapers`);
+    scrapers = response.data.map((s) => s.scraper);
+    scrapers.forEach((s:any)=> {
+      vendors[s.name] = new SimpleCSSVendor(s.name, s.country, new RegExp(_.trim(s.urlRegex,'/')), s.itemSelector, s.parsers, s.requiredFields, s.copyFields);
+    });
+  } catch (e) {
+    console.error(`Could not get scrapers from server ${e.toString()}`);
+  }
+
   if (changeInfo?.status == 'complete') {
     for (let key in vendors) {
       const vendor = vendors[key];
@@ -215,12 +234,12 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
                   publicKeySigned = null;
                 }
                 clearInterval(cancel);
-                chrome.tabs.sendMessage(tab.id as number, {text: key}, handleResponse);
+                chrome.tabs.sendMessage(tab.id as number, {text: key, scrapers}, handleResponse);
               }
             }, 2000);
           } else {
             // ...if it matches, send a message specifying a callback too
-            chrome.tabs.sendMessage(tab.id as number, {text: key}, handleResponse);
+            chrome.tabs.sendMessage(tab.id as number, {text: key, scrapers}, handleResponse);
           }
         }, 5000);
       }

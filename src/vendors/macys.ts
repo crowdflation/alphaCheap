@@ -1,33 +1,29 @@
-const vendor = 'macys';
-function parse(document) {
-  const products = document.querySelectorAll('div.productDetail');
-  let result:any[] = [];
-  let errors:any[] = [];
-  [].forEach.call(products, function (product: any) {
-    try {
-      const originalPrice = product.querySelectorAll('.priceInfo .regular')[0]?.innerText;
-      let price = product.querySelectorAll('.priceInfo .discount')[0]?.innerText;
-      if (!price){
-        price = product.querySelectorAll('.priceInfo .regular')[1]?.innerText;
-      }
-      const name = product.querySelectorAll('div.productDescription > a')[0].innerText;
-      const brand = product.querySelectorAll('div.productBrand')[0].innerText;
-      const pathname = new URL(document.URL).pathname;
-      //Ignore if we don't have price data
-      if (!originalPrice||!price) {
-        return;
-      }
-      const parsedData = {originalPrice, price, brand, name, pathname};
-      result.push(parsedData)
-    }
-    catch (e) {
-      console.error('Did not parse one items', e);
-      errors.push({error:e.toString(), stack: e.stack, element: product?.innerText});
-    }
-  });
-  // Pass it back
-  return { data: result, vendor, errors };
-}
+import {INode} from "./base/types";
+import {BaseProductVendor} from './base';
 
-const urlRegex = /^https?:\/\/(?:[^./?#]+\.)?macys\.com\/shop\/*/;
-export default {vendor, parse, urlRegex};
+export default new BaseProductVendor('macys',
+    'US',
+    /^https?:\/\/(?:[^./?#]+\.)?macys\.com\/shop\/*/,
+    'div.productDetail',
+    {
+        name: (item: INode, index?: number) => {
+            return item.querySelectorAll('div.productDescription > a')[0].innerText;
+        }, price: (item: INode, index?: number) => {
+            let price = item.querySelectorAll('.priceInfo .discount')[0]?.innerText;
+            if (!price) {
+                price = item.querySelectorAll('.priceInfo .regular')[1]?.innerText;
+            }
+            return price;
+        },
+        originalPrice: (item: INode, index?: number) => {
+            return item.querySelectorAll('.priceInfo .regular')[0]?.innerText;
+        },
+        brand: (item: INode, index?: number) => {
+            return item.querySelectorAll('div.productBrand')[0].innerText;
+        },
+        pathname: (item: INode, index?: number) => {
+            return new URL(document.URL).pathname;
+        }
+    }, ['name', 'price'], {pricePerUnit: 'price'});
+
+

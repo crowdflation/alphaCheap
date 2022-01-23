@@ -1,5 +1,7 @@
 // TODO: Move this into separate file
 import vendors from './vendors'
+import {SimpleCSSVendor} from "./vendors/base";
+import _ from 'lodash'
 //import detectEthereumProvider from '@metamask/detect-provider';
 
 function injectCode(_injectedPublicKey) {
@@ -41,6 +43,20 @@ chrome.runtime.onMessage.addListener( async (msg, sender, sendResponse) => {
       injectCode(msg.publicKey);
       sendResponse({type:'signed'});
       return;
+    }
+
+    if(!msg.text) {
+      return;
+    }
+
+    let scrapers = [];
+    try {
+      scrapers = msg.scrapers;
+      scrapers.forEach((s:any)=> {
+        vendors[s.name] = new SimpleCSSVendor(s.name, s.country, new RegExp(_.trim(s.urlRegex,'/')), s.itemSelector, s.parsers, s.requiredFields, s.copyFields);
+      });
+    } catch (e) {
+      console.error('Could not get scrapers from server ${e.toString()}');
     }
 
     // TODO: Add more vendors
