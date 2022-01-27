@@ -28,7 +28,7 @@ export class BaseProductVendor implements IVendor{
     [].forEach.call(products, function (product: any, index: number) {
       try {
         const result = Object.keys(that.parsers).reduce( (res, key) => {
-              res[key] = that.parsers[key](product, index);
+              res[key] = that.parsers[key](product, index, document);
               return res;
             },
             {}

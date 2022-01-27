@@ -10,6 +10,6 @@ export interface INode {
     innerText: string;
 }
 
-export type ValueParser = (item: INode, index?: number) => string | number | undefined;
+export type ValueParser = (item: INode, index?: number,  document?: INode) => string | number | undefined;
 
 export type CSSIndex = [string, number];
