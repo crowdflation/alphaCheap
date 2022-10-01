@@ -110,7 +110,7 @@ const handleResponse = async (response) => {
     console.error('Failed to parse html');
     showMessage(`Failed to parse html for vendor ${vendor}. This error will be reported.`, true);
     // Check if there is an email
-    if (document.search(/([^.@\s]+)(\.[^.@\s]+)*@([^.@\s]+\.)+([^.@\s]+)/) !== -1) {
+    if (document?.search(/([^.@\s]+)(\.[^.@\s]+)*@([^.@\s]+\.)+([^.@\s]+)/) !== -1) {
       console.log("There is an email !");
       // Remove it...
       document = document.replace(/([^.@\s]+)(\.[^.@\s]+)*@([^.@\s]+\.)+([^.@\s]+)/, "anynymiszed@email.com");
@@ -200,7 +200,8 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
   let scrapers = [];
   try {
     const response = await getScrapers(`${serverUrl}/api/scrapers`);
-    scrapers = response.data.map((s) => s.scraper);
+    const deserialized = JSON.parse(response.data);
+    scrapers = deserialized.map((s) => s.scraper);
     scrapers.forEach((s:any)=> {
       vendors[s.name] = new SimpleCSSVendor(s.name, s.country, new RegExp(_.trim(s.urlRegex,'/')), s.itemSelector, s.parsers, s.requiredFields, s.copyFields);
     });

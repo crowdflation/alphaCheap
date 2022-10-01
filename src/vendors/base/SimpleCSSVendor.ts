@@ -12,7 +12,11 @@ export class SimpleCSSVendor extends BaseProductVendor {
 
     static simpleCSSParser = (css:string, position: number) : ValueParser => {
         return (item: INode) => {
-            return item.querySelectorAll(css)[position].innerText;
+            const parsed = item.querySelectorAll(css);
+            if(parsed.length<=position) {
+                return undefined;
+            }
+            return parsed[position]?.innerText;
         };
     }
 }
