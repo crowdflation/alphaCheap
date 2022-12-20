@@ -11,8 +11,8 @@ let publicKeySigned: any = null;
 let walletAddress = null;
 let walletPublicKey = null;
 
-const serverUrl = 'https://www.crowdflation.io';
-//const serverUrl = 'http://localhost:3000';
+//const serverUrl = 'https://www.crowdflation.io';
+const serverUrl = 'http://localhost:3000';
 
 const readKey = (key: string): Promise<any> => {
   return new Promise((succ) => {

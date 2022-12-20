@@ -1,4 +1,4 @@
-import {INode, IVendor, ValueParser} from "./types";
+import {IImage, INode, IVendor, ValueParser} from "./types";
 
 export class BaseProductVendor implements IVendor{
   public constructor(name: string, country: string, urlRegex:RegExp, itemSelector:string, parsers: Record<string,ValueParser>, requiredFields:string[], copyFields:Record<string,string>) {
@@ -19,6 +19,22 @@ export class BaseProductVendor implements IVendor{
   public readonly copyFields: Record<string,string>;
   public country: string;
 
+  // TODO: reduce size, dont upload duplicates
+  protected getBase64Image = (img:IImage, errors) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext("2d");
+    if(!ctx) {
+      console.error('Failed getting 2d context');
+      errors.push('Failed getting 2d context')
+      return null;
+    }
+    ctx.drawImage(img as CanvasImageSource, 0, 0);
+    const dataURL = canvas.toDataURL("image/png");
+    return dataURL; //.replace(/^data:image\/(png|jpg);base64,/, "");
+  }
+
 
   parse = (document: INode) => {
     const products = document.querySelectorAll(this.itemSelector);
@@ -28,7 +44,11 @@ export class BaseProductVendor implements IVendor{
     [].forEach.call(products, function (product: any, index: number) {
       try {
         const result = Object.keys(that.parsers).reduce( (res, key) => {
-              res[key] = that.parsers[key](product, index, document);
+              if(key==='img') {
+                res[key] = that.getBase64Image(that.parsers[key](product, index, document) as IImage, errors);
+              } else {
+                res[key] = that.parsers[key](product, index, document);
+              }
               return res;
             },
             {}
