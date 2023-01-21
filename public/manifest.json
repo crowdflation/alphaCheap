@@ -3,7 +3,7 @@
   "version": "0.2",
   "description": "Finding deals and gathering price data",
   "manifest_version": 2,
-  "permissions": ["storage", "contextMenus", "tabs",  "activeTab", "geolocation", "notifications", "https://www.crowdflation.io/api"],
+  "permissions": ["storage", "contextMenus", "tabs",  "activeTab", "geolocation", "notifications", "https://www.crowdflation.io/api", "webNavigation"],
 
   "options_ui": {
     "page": "options.html",
