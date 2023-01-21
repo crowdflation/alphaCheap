@@ -7,12 +7,12 @@ export interface IVendor {
 
 export interface INode {
     querySelectorAll: (key:string) => INode[];
+    querySelector: (key:string) => INode[];
     innerText: string;
 }
 
 export interface IImage {
-    width: number;
-    height: number;
+    src: string;
 }
 
 export type ValueParser = (item: INode, index?: number,  document?: INode) => string | number | undefined | IImage;

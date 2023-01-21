@@ -15,7 +15,8 @@ export default new BaseProductVendor('kroger',
             return item.querySelectorAll('[data-qa="cart-page-item-description"]')[0].innerText.split(' - ')[1];
         },
         img: (item: INode, index?: number) => {
-            return item.querySelectorAll('[data-qa="cart-page-item-image-loaded"]')[0] as unknown as IImage;
+            const img = item.querySelectorAll('.kds-Image-img')[0] as any;
+            return img as IImage;
         }
     }, ['name', 'price'], {pricePerUnit: 'price'});
 

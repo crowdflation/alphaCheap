@@ -11,8 +11,8 @@ let publicKeySigned: any = null;
 let walletAddress = null;
 let walletPublicKey = null;
 
-//const serverUrl = 'https://www.crowdflation.io';
-const serverUrl = 'http://localhost:3000';
+const serverUrl = 'https://www.crowdflation.io';
+//const serverUrl = 'http://localhost:3000';
 
 const readKey = (key: string): Promise<any> => {
   return new Promise((succ) => {
@@ -94,6 +94,8 @@ const handleResponse = async (response) => {
   if(!response || !response.type || response.type !=='parsed' ) {
     return;
   }
+
+  console.log('Got response', response);
 
   let location: any = await getLocation();
 
@@ -195,6 +197,29 @@ const handleResponsePublicKey = async (response) => {
 };
 
 
+const scrapeAndGetResponse = async (tabId, data:any) => {
+
+  const listener = function (response, sender, sendResponse) {
+    console.log('Got response', response, sender);
+    if(!response || !response.type || response.type !=='parsed' ) {
+      return;
+    }
+
+    handleResponse(response);
+    chrome.runtime.onMessage.removeListener(listener);
+  };
+
+  chrome.runtime.onMessage.addListener(listener);
+  chrome.tabs.sendMessage(tabId, {...data, delayed:true});
+}
+
+chrome.webNavigation.onCompleted.addListener(
+    function (details) {
+      console.log('onCompleted', details);
+      chrome.tabs.sendMessage(details.tabId as number, {loaded:true}, ()=> {});
+    }
+)
+
 
 chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
   let scrapers = [];
@@ -214,12 +239,13 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
       const vendor = vendors[key];
       if (vendor.urlRegex.test(tab.url as string)) {
         // haven't figured out a better way to do this yet, so we just wait 5 seconds after page is loaded
+
         setTimeout(async () => {
           await keysLoaded;
           // ...if it matches, send a message specifying a callback too
 
           if (!publicKeySigned) {
-            chrome.tabs.sendMessage(tab.id as number, {publicKey}, handleResponsePublicKey)
+            chrome.tabs.sendMessage(tab.id as number, {delayed:true, publicKey}, handleResponsePublicKey);
 
             const listener = function (request, sender, sendResponse) {
               handleResponsePublicKey(request);
@@ -235,12 +261,12 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
                   publicKeySigned = null;
                 }
                 clearInterval(cancel);
-                chrome.tabs.sendMessage(tab.id as number, {text: key, scrapers}, handleResponse);
+                scrapeAndGetResponse(tab.id as number,{text: key, scrapers})
               }
             }, 2000);
           } else {
             // ...if it matches, send a message specifying a callback too
-            chrome.tabs.sendMessage(tab.id as number, {text: key, scrapers}, handleResponse);
+            scrapeAndGetResponse(tab.id as number,{text: key, scrapers})
           }
         }, 5000);
       }

@@ -17,8 +17,46 @@ function injectCode(_injectedPublicKey) {
 }
 
 
+// return srcset part with url
+function getSrcSetPart(srcset): string {
+    const srcsetParts = srcset.split(',');
+    // find part with url
+    const srcsetPart = srcsetParts.find((part) => {
+        return part.startsWith('http');
+    });
+    return srcsetPart;
+}
+
+//load images from src set if they are not loaded
+function loadImages() {
+    const images = document.querySelectorAll('img');
+    images.forEach((img) => {
+        // check if src starts with data
+        if (img.src.startsWith('data')) {
+            const src = getSrcSetPart(img.srcset);
+            if (src) {
+                // trim anything after percent sign
+                const srcTrimmed = src.split(' ')[0];
+                img.src = srcTrimmed;
+            }
+        }
+    });
+}
+
+
 // Listen for messages from background script
 chrome.runtime.onMessage.addListener( async (msg, sender, sendResponse) => {
+    console.log('Got msg', msg)
+    if (msg.loaded) {
+        console.log('loaded message');
+        loadImages();
+        sendResponse({});
+    }
+
+    if(!msg.delayed) {
+        return;
+    }
+
     if (msg.publicKey) {
 
       document.addEventListener('returnSignedCertificate', function (e: any) {
@@ -66,6 +104,26 @@ chrome.runtime.onMessage.addListener( async (msg, sender, sendResponse) => {
       return;
     }
 
-    const parsed = vendors[msg.text].parse(document);
-    sendResponse({...parsed, url: document.URL, document: (document as any).innerText, type: 'parsed', country: vendors[msg.text].country })
+    loadImages()
+
+
+    setTimeout(() => {
+        const parsed = vendors[msg.text].parse(document);
+        console.log('Sending response');
+
+        setTimeout(() => {
+
+            chrome.runtime.sendMessage({
+                ...parsed,
+                url: document.URL,
+                document: (document as any).innerText,
+                type: 'parsed',
+                country: vendors[msg.text].country
+            }, function() {
+                console.log('parsed data sent');
+            });
+        }, 1000);
+    } , 1000);
+
+    sendResponse();
 });

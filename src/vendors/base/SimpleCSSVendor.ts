@@ -1,5 +1,5 @@
 import {BaseProductVendor} from './BaseProductVendor'
-import {CSSIndex, INode, ValueParser} from "./types";
+import {CSSIndex, IImage, INode, ValueParser} from "./types";
 export class SimpleCSSVendor extends BaseProductVendor {
     public constructor(name:string, country: string, urlRegex:RegExp, itemSelector:string, parsers: Record<string,CSSIndex>, requiredFields:string[], copyFields:Record<string,string>) {
         super(name, country, urlRegex, itemSelector, Object.keys(parsers).reduce( (res, key) => {
@@ -16,7 +16,7 @@ export class SimpleCSSVendor extends BaseProductVendor {
             if(parsed.length<=position) {
                 return undefined;
             }
-            return parsed[position]?.innerText;
+            return parsed[position]?.innerText || parsed[position] as unknown as IImage;
         };
     }
 }
